@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yandexid"
-version = "0.1.1"
+version = "0.1.2"
 description = "Yandex ID oauth API wrapper"
 authors = ["Maxim Mosin <max@mosin.pw>"]
 license = "MIT"
@@ -37,7 +37,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.bumpver]
-current_version = "0.1.1"
+current_version = "0.1.2"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = false

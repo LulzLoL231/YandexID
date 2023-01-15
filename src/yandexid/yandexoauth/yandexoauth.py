@@ -103,7 +103,8 @@ class YandexOAuth:
         '''
         params = {
             'response_type': response_type,
-            'redirect_uri': self._redirect_uri
+            'redirect_uri': self._redirect_uri,
+            'client_id': self._client_id
         }
         if device_id:
             try:
