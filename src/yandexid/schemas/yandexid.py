@@ -125,3 +125,30 @@ class User(BaseModel):
             return datetime.strptime(value, '%Y-%m-%d')
         except Exception:
             return value
+
+    def get_avatar_url(self, size: str = 'islands-200') -> str | None:
+        '''Get avatar url by size
+
+        Args:
+            size (str, optional): Avatar size. Default is `islands-200`.
+
+        Note:
+            size can be:
+                - `islands-small` - 28x28;
+                - `islands-34` - 34x34;
+                - `islands-middle` - 42x42;
+                - `islands-50` - 50x50;
+                - `islands-retina-small` - 56x56;
+                - `islands-68` - 68x68;
+                - `islands-75` - 75x75;
+                - `islands-retina-middle` - 84x84;
+                - `islands-retina-50` - 100x100;
+                - `islands-200` - 200x200;
+
+        Returns:
+            str | None: Avatar url
+        '''
+        if self.default_avatar_id is None:
+            return None
+
+        return f'https://avatars.yandex.net/get-yapic/{self.default_avatar_id}/{size}'
