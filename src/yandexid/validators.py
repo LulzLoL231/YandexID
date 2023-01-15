@@ -3,7 +3,7 @@
 '''
 import warnings
 
-from .errors.yandexid import (
+from .errors.yandexoauth import (
     InvalidDeviceID, InvalidDeviceName
 )
 
