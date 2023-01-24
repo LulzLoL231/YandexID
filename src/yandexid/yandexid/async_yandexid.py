@@ -10,7 +10,7 @@ from httpx import AsyncClient
 
 from ..schemas.yandexid import User
 from ..__meta import __version__
-from avatar_utils import get_avatar_url
+from ..avatar_utils import get_avatar_url
 
 
 class AsyncYandexID:

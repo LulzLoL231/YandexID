@@ -8,7 +8,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, validator
 
-from avatar_utils import get_avatar_url
+from ..avatar_utils import get_avatar_url
 
 
 class Sex(str, Enum):
