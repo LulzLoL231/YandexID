@@ -22,7 +22,7 @@ from ..validators import (
 from ..schemas.yandexoauth import Token
 
 
-class YandexOAuth:
+class AsyncYandexOAuth:
     '''Yandex ID OAuth API async wrapper
     '''
     BASE_URL = 'https://oauth.yandex.ru'

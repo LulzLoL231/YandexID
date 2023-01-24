@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 '''Yandex ID API wrapper
 '''
+import json
 import logging
 from warnings import warn
 
+import jwt
 from httpx import Client
 
 from ..schemas.yandexid import User
 from ..__meta import __version__
+from avatar_utils import get_avatar_url
 
 
 class YandexID:
@@ -23,6 +26,7 @@ class YandexID:
             oauth_token (str): OAuth access token.
             client (httpx.Client, optional): Client object. Defaults to None.
         '''
+        self.get_avatar_url = get_avatar_url
         self._oauth_token = oauth_token
 
         self.__headers = {
@@ -31,27 +35,27 @@ class YandexID:
         }
         self.__client = client or Client(headers=self.__headers, base_url=self.BASE_URL)
 
-    def _make_request(self, url: str, **kwargs) -> dict:
+    def _make_request(self, url: str, **kwargs) -> str:
         '''Make request to Yandex ID API
 
         Args:
             url (str): URL to request
 
         Returns:
-            dict: Response data
+            str: Response data
         '''
         response = self.__client.request('GET', url, **kwargs)
         response.raise_for_status()
-        return response.json()
+        return response.text
 
     def get_user_info(
-        self, format: str = 'json', jwt_secret: str | None = None,
+        self, format, jwt_secret: str | None = None,
         with_openid_identity: bool = False
-    ) -> dict:
+    ) -> str:
         '''Get user info
 
         Args:
-            format (str, optional): Response format. Defaults to 'json'.
+            format (str, optional): Response format.
             jwt_secret (str, optional): JWT secret. Defaults to None.
             with_openid_identity (bool, optional): Include OpenID identity. Defaults to False.
 
@@ -59,16 +63,18 @@ class YandexID:
             Yandex recommends to not use `jwt_secret` for security reasons.
 
         Returns:
-            dict: User info
+            str: User info
         '''
         url = '/info'
         if jwt_secret is not None:
             warn('Using jwt_secret is not recommended for security reasons', stacklevel=2)
         params = {
             'format': format,
-            'with_openid_identity': int(with_openid_identity),
-            'jwt_secret': jwt_secret
         }
+        if with_openid_identity:
+            params['with_openid_identity'] = int(with_openid_identity)
+        if jwt_secret:
+            params['jwt_secert'] = jwt_secret
         return self._make_request(url, params=params)
 
     def get_user_info_json(self, with_openid_identity: bool = False) -> User:
@@ -80,9 +86,9 @@ class YandexID:
         Returns:
             User: User info
         '''
-        return User(**self.get_user_info(
+        return User(**json.loads(self.get_user_info(
             format='json', with_openid_identity=with_openid_identity
-        ))
+        )))
 
     def get_user_info_xml(self, with_openid_identity: bool = False) -> str:
         '''Get user info in XML format
@@ -96,14 +102,14 @@ class YandexID:
         Returns:
             str: User info
         '''
-        return str(self.get_user_info(
+        return self.get_user_info(
             format='xml', with_openid_identity=with_openid_identity
-        ))
+        )
 
-    def get_user_info_jwt(
+    def get_user_info_jwt_unparsed(
         self, jwt_secret: str | None = None, with_openid_identity: bool = False
     ) -> str:
-        '''Get user info in JWT format
+        '''Get user info in unparsed JWT format, verification is disabled.
 
         Args:
             jwt_secret (str, optional): JWT secret. Defaults to None.
@@ -115,7 +121,37 @@ class YandexID:
         Returns:
             str: User info
         '''
-        return str(self.get_user_info(
+        return self.get_user_info(
             format='jwt', jwt_secret=jwt_secret,
             with_openid_identity=with_openid_identity
-        ))
+        )
+
+    def get_user_info_jwt(
+        self, client_secret: str | None = None, jwt_secret: str | None = None,
+        with_openid_identity: bool = False
+    ) -> dict:
+        '''Get user info in JWT format
+
+        Args:
+            client_secret (str, optional): Client secret. Defaults to None.
+            jwt_secret (str, optional): JWT secret. Defaults to None.
+            with_openid_identity (bool, optional): Include OpenID identity. Defaults to False.
+
+        Note:
+            Yandex recommends to not use `jwt_secret` for security reasons.\n
+            For verification `client_secret` or `jwt_secret` is required.
+
+        Returns:
+            dict: User info
+        '''
+        secret = client_secret or jwt_secret
+        if secret is None:
+            raise ValueError('Either client_secret or jwt_secret is required')
+        return jwt.decode(
+            self.get_user_info_jwt_unparsed(
+                jwt_secret=jwt_secret,
+                with_openid_identity=with_openid_identity
+            ),
+            secret,
+            algorithms=['HS256']
+        )

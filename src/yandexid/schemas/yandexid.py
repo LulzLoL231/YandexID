@@ -8,6 +8,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field, validator
 
+from avatar_utils import get_avatar_url
+
 
 class Sex(str, Enum):
     '''User sex enum
@@ -129,26 +131,27 @@ class User(BaseModel):
     def get_avatar_url(self, size: str = 'islands-200') -> str | None:
         '''Get avatar url by size
 
-        Args:
-            size (str, optional): Avatar size. Default is `islands-200`.
+    Args:
+        avatar_id (str): Avatar ID.
+        size (str, optional): Avatar size. Default is `islands-200`.
 
-        Note:
-            size can be:
-                - `islands-small` - 28x28;
-                - `islands-34` - 34x34;
-                - `islands-middle` - 42x42;
-                - `islands-50` - 50x50;
-                - `islands-retina-small` - 56x56;
-                - `islands-68` - 68x68;
-                - `islands-75` - 75x75;
-                - `islands-retina-middle` - 84x84;
-                - `islands-retina-50` - 100x100;
-                - `islands-200` - 200x200;
+    Note:
+        size can be:\n
+            - `islands-small` - 28x28;\n
+            - `islands-34` - 34x34;\n
+            - `islands-middle` - 42x42;\n
+            - `islands-50` - 50x50;\n
+            - `islands-retina-small` - 56x56;\n
+            - `islands-68` - 68x68;\n
+            - `islands-75` - 75x75;\n
+            - `islands-retina-middle` - 84x84;\n
+            - `islands-retina-50` - 100x100;\n
+            - `islands-200` - 200x200;\n
 
-        Returns:
-            str | None: Avatar url
+    Returns:
+        str | None: Avatar url
         '''
         if self.default_avatar_id is None:
             return None
 
-        return f'https://avatars.yandex.net/get-yapic/{self.default_avatar_id}/{size}'
+        return get_avatar_url(self.default_avatar_id, size)
